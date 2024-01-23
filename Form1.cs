@@ -1,25 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections;
-using System.Windows.Forms;
-using System.Linq;
+using System.Collections.Generic;
 using System.IO;
-using System.Collections.Concurrent;
+using System.Linq;
+using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
+
 namespace Collection
 {
     public partial class Form1 : Form
     {
         public Form1()
         {
+            string defoltPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\file";
             InitializeComponent();
-        }        
+            for (int i = 0; i < 10; i++)
+            {
+                File.Create(Path.Combine(defoltPath, $"File_{i}.txt"));
+            }
+            textBox11.Text = defoltPath;
+        }
         private void button1_Click(object sender, EventArgs e)
-        {     
-            double.TryParse(textBox1.Text,out var arifmeticFirstValue);
+        {
+            double.TryParse(textBox1.Text, out var arifmeticFirstValue);
             double.TryParse(textBox2.Text, out var arifmeticSecondValue);
             int.TryParse(textBox3.Text, out var arifmeticLenthProgression);
-            if ( string.IsNullOrEmpty( textBox1.Text))
-                MessageBox.Show("Вы не ввели чисто в поле прогрессии");     
+            if (string.IsNullOrEmpty(textBox1.Text))
+                MessageBox.Show("Вы не ввели чисто в поле прогрессии");
             if (string.IsNullOrEmpty(textBox2.Text))
                 MessageBox.Show("Вы не ввели шаг  прогрессии");
             if (string.IsNullOrEmpty(textBox3.Text))
@@ -27,9 +35,9 @@ namespace Collection
             ArifmeticProgressiveList progressivList = new ArifmeticProgressiveList(arifmeticFirstValue, arifmeticSecondValue, arifmeticLenthProgression);
             textBox4.Text = "";
             foreach (double item in progressivList)
-            { 
-                textBox4.Text += item + ","; 
-            }  
+            {
+                textBox4.Text += item + ",";
+            }
         }
         private void button2_Click(object sender, EventArgs e)
         {
@@ -50,11 +58,11 @@ namespace Collection
             }
         }
         private void button3_Click(object sender, EventArgs e)
-        {        
+        {
             int.TryParse(textBox9.Text, out var currentValue);
             if (string.IsNullOrEmpty(textBox9.Text))
                 MessageBox.Show("Вы не ввели простое число");
-            SimpleNumber simpleNumber = new SimpleNumber( currentValue);
+            SimpleNumber simpleNumber = new SimpleNumber(currentValue);
             textBox10.Text = "";
             foreach (int item in simpleNumber)
             {
@@ -63,7 +71,6 @@ namespace Collection
         }
         private void button4_Click(object sender, EventArgs e)
         {
-            
             string path = textBox11.Text;
             string fileName = textBox12.Text;
             string fileType = textBox13.Text;
@@ -74,14 +81,11 @@ namespace Collection
             if (string.IsNullOrEmpty(fileType))
                 MessageBox.Show("Вы не ввели тип файла");
             FileCollection fileCollection = new FileCollection(path, fileName, fileType);
-            textBox14.Text = "";
-            foreach (double item in fileCollection)
+             
+            foreach (string file in fileCollection)
             {
-                textBox14.Text += item + ",";
+                textBox14.Text += file+", ";
             }
-            
-            
-            
         }
         private void button5_Click(object sender, EventArgs e)
         {
@@ -93,15 +97,15 @@ namespace Collection
             foreach (string item in randomWords)
             {
                 if (item == word)
-                    break;     
-                textBox16.Text += item + ", ";                   
+                    break;
+                textBox16.Text += item + ", ";
             }
         }
     }
     class RandomWords : IEnumerable
     {
         public Random ran = new Random();
-        string word;    
+        string word;
         public RandomWords(string word)
         {
             this.word = word;
@@ -113,48 +117,52 @@ namespace Collection
                 //string randomWords = String.Join("", this.word.ToCharArray().ToList().OrderBy(x => this.ran.Next()));
                 string randomWords = new string(this.word.ToCharArray().ToList().OrderBy(x => this.ran.Next()).ToArray());
                 yield return randomWords;
-            } 
+            }
         }
     }
-    class FileCollection : IEnumerable
+
+    class FileCollection
     {
         string path;
         string fileName;
         string fileType;
+
         
         public FileCollection(string path, string fileName, string fileType)
         {
             this.path = path;
             this.fileName = fileName;
             this.fileType = fileType;
-        }
-        public IEnumerator GetEnumerator()
-        {
             
+        }
+        public IEnumerator<string> GetEnumerator()
+        {
             if (Directory.Exists(path))
             {
-                //string[] allfolders = Directory.GetDirectories(path,fileType, SearchOption.TopDirectoryOnly);
-                //string[] allfolders = Directory.GetFiles(path, fileType, SearchOption.TopDirectoryOnly);
-                IEnumerable<string> allfiles = Directory.EnumerateFiles(path, fileType, SearchOption.TopDirectoryOnly);
-                if (File.Exists(fileName))
-                foreach (string folder in allfiles)
+                Regex regex = new Regex($@"{fileName}\.{fileType}");
+                FileInfo fileInfo;
+                foreach (string item in Directory.GetFiles(path))
                 {
-                    yield return folder;
-                }
+                    fileInfo = new FileInfo(item);
+                    Debug.WriteLine($"{fileInfo.Name} {regex.IsMatch(fileInfo.Name)}");
+                    if (regex.IsMatch(fileInfo.Name))
+                    {
+                        yield return fileInfo.Name;
+                    }
 
+                }
             }
-            else if (!File.Exists(path))
-            {
-                MessageBox.Show("Некорректный путь");
-            }         
+            
         }
     }
+    
+
     class ArifmeticProgressiveList : IEnumerable
     {
         double arifmeticFirstValue;
         double arifmeticSecondValue;
         int arifmeticLenthProgression;
-        public ArifmeticProgressiveList(double arifmeticFirstValue, double arifmeticSecondValue, int arifmeticLenthProgression) 
+        public ArifmeticProgressiveList(double arifmeticFirstValue, double arifmeticSecondValue, int arifmeticLenthProgression)
         {
             this.arifmeticFirstValue = arifmeticFirstValue;
             this.arifmeticSecondValue = arifmeticSecondValue;
@@ -168,12 +176,12 @@ namespace Collection
             }
         }
     }
-    class  GeometricProgressiveList : IEnumerable
+    class GeometricProgressiveList : IEnumerable
     {
         double geometricFirstValue;
         double geometricSecondValue;
         int geometricLenthProgression;
-        public GeometricProgressiveList(double geometricFirstValue, double geometricSecondValue, int geometricLenthProgression) 
+        public GeometricProgressiveList(double geometricFirstValue, double geometricSecondValue, int geometricLenthProgression)
         {
             this.geometricFirstValue = geometricFirstValue;
             this.geometricSecondValue = geometricSecondValue;
@@ -191,7 +199,7 @@ namespace Collection
     {
         int simpleValue;
         int currentValue;
-        public SimpleNumber( int currentValue)
+        public SimpleNumber(int currentValue)
         {
             this.currentValue = currentValue;
         }
@@ -223,10 +231,10 @@ namespace Collection
                 for (int j = 2; j < currentValue; j++)
                 {
                     numbers.Remove(numbers[i] * j);
-                    simpleValue = numbers[i];                   
+                    simpleValue = numbers[i];
                 }
                 yield return simpleValue;
-            }     
+            }
         }
     }
 }

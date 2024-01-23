@@ -387,6 +387,7 @@
             this.textBox13.Name = "textBox13";
             this.textBox13.Size = new System.Drawing.Size(101, 20);
             this.textBox13.TabIndex = 32;
+            this.textBox13.Text = "*";
             // 
             // textBox14
             // 
